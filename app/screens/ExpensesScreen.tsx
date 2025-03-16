@@ -84,23 +84,31 @@ const ExpensesScreen = () => {
     navigation.navigate('EditExpense', { expenseId });
   };
   
-  // Render expense item
+  // Render expense item - FIX: Added key prop to ExpenseCard
   const renderExpenseItem = ({ item }: { item: Expense }) => (
     <ExpenseCard
+      key={item.id}
       expense={item}
       category={categories.find(cat => cat.id === item.categoryId)}
       onPress={() => handleExpensePress(item.id)}
     />
   );
   
-  // Render date group
+  // Render date group - FIX: Added key to expense items in the map function
   const renderDateGroup = ({ item }: { item: { date: string, expenses: Expense[] } }) => (
     <View style={styles.dateGroup}>
       <Text style={[styles.dateHeader, { color: colors.text }]}>
         {formatDate(new Date(item.date), 'long')}
       </Text>
       <Divider style={[styles.divider, { backgroundColor: colors.border }]} />
-      {item.expenses.map(expense => renderExpenseItem({ item: expense }))}
+      {item.expenses.map(expense => (
+        <ExpenseCard
+          key={expense.id}
+          expense={expense}
+          category={categories.find(cat => cat.id === expense.categoryId)}
+          onPress={() => handleExpensePress(expense.id)}
+        />
+      ))}
     </View>
   );
   
@@ -261,4 +269,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ExpensesScreen; 
+export default ExpensesScreen;

@@ -2,7 +2,7 @@ import React from 'react';
 import { StyleSheet, View, FlatList, TouchableOpacity } from 'react-native';
 import { Text, FAB, Searchbar, List, Avatar, Divider } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import { useApp } from '../contexts/AppContext';
@@ -10,15 +10,34 @@ import { useThemeColors } from '../utils/themeUtils';
 import { Category } from '../models';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
+type CategoryScreenRouteProp = RouteProp<RootStackParamList, 'Categories'>;
 
 const CategoriesScreen = () => {
   const navigation = useNavigation<NavigationProp>();
+  const route = useRoute<CategoryScreenRouteProp>();
   const { categories } = useApp();
   const colors = useThemeColors();
   
-  // Handle navigation to category details
+  // Get selection mode from route params
+  const selectionMode = route.params?.selectionMode || false;
+  
+  // Handle category press based on mode
   const handleCategoryPress = (categoryId: string) => {
-    navigation.navigate('CategoryDetails', { categoryId });
+    if (selectionMode) {
+      // In selection mode, return to previous screen with the selected category
+      const selectedCategory = categories.find(c => c.id === categoryId);
+      if (selectedCategory) {
+        // Go back to AddExpense screen with the selected category
+        navigation.navigate('AddExpense', { 
+          categoryId: categoryId,
+          categoryName: selectedCategory.name,
+          categoryColor: selectedCategory.color
+        });
+      }
+    } else {
+      // In regular mode, navigate to category details
+      navigation.navigate('CategoryDetails', { categoryId });
+    }
   };
   
   // Handle navigation to add category
@@ -41,8 +60,10 @@ const CategoriesScreen = () => {
           <Text style={[styles.defaultBadge, { color: colors.subText }]}>Default</Text>
         )}
       </View>
+      
+      {/* Show different icon based on mode */}
       <Ionicons 
-        name="chevron-forward" 
+        name={selectionMode ? "checkmark-circle-outline" : "chevron-forward"} 
         size={20} 
         color={colors.subText} 
       />
@@ -51,6 +72,15 @@ const CategoriesScreen = () => {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
+      {/* Add selection mode title if in selection mode */}
+      {selectionMode && (
+        <View style={styles.selectionHeader}>
+          <Text style={[styles.selectionHeaderText, { color: colors.text }]}>
+            Select a category
+          </Text>
+        </View>
+      )}
+      
       {/* Categories List */}
       <FlatList
         data={categories.sort((a, b) => a.name.localeCompare(b.name))}
@@ -60,13 +90,15 @@ const CategoriesScreen = () => {
         contentContainerStyle={styles.listContent}
       />
       
-      {/* Add Button */}
-      <FAB
-        style={[styles.fab, { backgroundColor: colors.primary }]}
-        icon="plus"
-        onPress={handleAddCategory}
-        color="white"
-      />
+      {/* Only show Add button in non-selection mode */}
+      {!selectionMode && (
+        <FAB
+          style={[styles.fab, { backgroundColor: colors.primary }]}
+          icon="plus"
+          onPress={handleAddCategory}
+          color="white"
+        />
+      )}
     </View>
   );
 };
@@ -113,6 +145,15 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
   },
+  selectionHeader: {
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+  },
+  selectionHeaderText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
 });
 
-export default CategoriesScreen; 
+export default CategoriesScreen;

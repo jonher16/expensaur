@@ -20,18 +20,18 @@ import CategoriesScreen from '../screens/CategoriesScreen';
 
 // Define navigation types
 export type RootStackParamList = {
-  MainTabs: undefined;
+  MainTabs: { screen?: keyof MainTabParamList };
   Home: undefined;
   Expenses: undefined;
   Insights: undefined;
   Settings: undefined;
-  AddExpense: { categoryId?: string };
+  AddExpense: { categoryId?: string; categoryName?: string; categoryColor?: string; date?: number };
   EditExpense: { expenseId: string };
   EditCategory: { categoryId?: string };
   CategoryDetails: { categoryId: string };
   DailyExpenses: { date: number };
   ExchangeRates: undefined;
-  Categories: undefined;
+  Categories: { selectionMode?: boolean };
 };
 
 export type MainTabParamList = {
@@ -167,4 +167,4 @@ const AppNavigator = () => {
   );
 };
 
-export default AppNavigator; 
+export default AppNavigator;
